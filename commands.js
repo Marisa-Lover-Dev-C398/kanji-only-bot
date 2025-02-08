@@ -1,5 +1,5 @@
 const { REST, Routes, ActionRowBuilder, StringSelectMenuBuilder } = require('discord.js');
-const { allowedStrings, ignoredChannels } = require('./utils');
+const { allowedStrings, ignoredChannels, saveData } = require('./utils');
 
 // Admin role (can execute commands)
 const ADMIN_ROLE_ID = 'admin role id here';
@@ -108,6 +108,7 @@ const handleCommandInteraction = async (interaction, client, getLogChannelID, se
     if (commandName === 'allow') {
         const stringToAllow = options.getString('string');
         allowedStrings.push(stringToAllow);
+        saveData();
         await interaction.reply(`許可された文字列: "${stringToAllow}" が追加されました。`);
         if (logChannel) {
             await logChannel.send(`**処罰記録**\nユーザー：${interaction.user.tag}\nコマンド: /allow\n許可された文字列: ${stringToAllow}`);
@@ -139,6 +140,7 @@ const handleCommandInteraction = async (interaction, client, getLogChannelID, se
         }
 
         await interaction.update({ content: `許可を取り消し: "${removedString}" が削除されました。`, components: [] });
+        saveData();
     }
 
     if (commandName === 'list-allowed') {
@@ -151,7 +153,7 @@ const handleCommandInteraction = async (interaction, client, getLogChannelID, se
 
     if (commandName === 'set-log-channel') {
         const newChannelId = extractChannelId(options.getString('channel_id'));
-        setLogChannelID(newChannelId);
+        setLogChannelID(newChannelId);1
         await interaction.reply(`新しいログチャンネルID: ${newChannelId} が設定されました。`);
     }
 
@@ -165,6 +167,7 @@ const handleCommandInteraction = async (interaction, client, getLogChannelID, se
         const channelMention = options.getString('channel');
         const channelId = extractChannelId(channelMention);
         ignoredChannels.add(channelId);
+        saveData();
         await interaction.reply(`チャンネル: ${channelMention} が無視リストに追加されました。`);
     }
 
@@ -194,6 +197,7 @@ const handleCommandInteraction = async (interaction, client, getLogChannelID, se
         if (logChannel) {
             await logChannel.send(`**処罰記録**\nユーザー：${interaction.user.tag}\n無視リストから削除されたチャンネル: <#${selected}>`);
         }
+        saveData();
 
         await interaction.update({ content: `無視リストから削除されました: <#${selected}>`, components: [] });
     }
