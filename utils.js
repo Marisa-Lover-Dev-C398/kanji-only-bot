@@ -1,7 +1,38 @@
 const { ChannelType } = require('discord.js');
 
+const fs = require('fs');
+const path = require('path');
+
+const ALLOWED_STRINGS_FILE = path.join(__dirname, 'allowedStrings.json');
+const IGNORED_CHANNELS_FILE = path.join(__dirname, 'ignoredChannels.json');
+
 let allowedStrings = [];
 let ignoredChannels = new Set();
+
+// DEFINE Fn:Load JSON Config Data.
+const loadData = () => {
+    try {
+        if (fs.existsSync(ALLOWED_STRINGS_FILE)) {
+            allowedStrings = JSON.parse(fs.readFileSync(ALLOWED_STRINGS_FILE, 'utf8'));
+        }
+        if (fs.existsSync(IGNORED_CHANNELS_FILE)) {
+            ignoredChannels = new Set(JSON.parse(fs.readFileSync(IGNORED_CHANNELS_FILE, 'utf8')));
+        }
+    } catch (error) {
+        console.error("データ読み込みエラー:", error);
+    }
+};
+// DEFINE Fn: Save Config data
+const saveData = () => {
+    try {
+        fs.writeFileSync(ALLOWED_STRINGS_FILE, JSON.stringify(allowedStrings, null, 2), 'utf8');
+        fs.writeFileSync(IGNORED_CHANNELS_FILE, JSON.stringify([...ignoredChannels], null, 2), 'utf8');
+    } catch (error) {
+        console.error("データ保存エラー:", error);
+    }
+};
+
+loadData();
 
 // Check message
 const checkMessageContent = async (message, getLogChannelID) => {
@@ -108,5 +139,6 @@ module.exports = {
     ignoredChannels,
     checkMessageContent,
     handleGuildMemberAdd,
-    handleGuildMemberUpdate
+    handleGuildMemberUpdate,
+    saveData
 };
